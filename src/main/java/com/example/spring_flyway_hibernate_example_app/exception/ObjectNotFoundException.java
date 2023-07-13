@@ -1,0 +1,9 @@
+package com.example.spring_flyway_hibernate_example_app.exception;
+
+import java.util.NoSuchElementException;
+
+public class ObjectNotFoundException extends NoSuchElementException {
+  public ObjectNotFoundException(String message) {
+    super(message);
+  }
+}
