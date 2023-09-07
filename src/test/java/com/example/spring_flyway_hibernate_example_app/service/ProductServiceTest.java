@@ -1,84 +1,98 @@
 package com.example.spring_flyway_hibernate_example_app.service;
 
-import com.example.spring_flyway_hibernate_example_app.dto.ProductDto;
+import com.example.spring_flyway_hibernate_example_app.annotation.TransactionalIntegrationTestContainers;
+import com.example.spring_flyway_hibernate_example_app.dto.ProductCreateDTO;
+import com.example.spring_flyway_hibernate_example_app.dto.ProductDTO;
+import com.example.spring_flyway_hibernate_example_app.dto.ProductUpdateDTO;
 import com.example.spring_flyway_hibernate_example_app.exception.ObjectNotFoundException;
-import com.example.spring_flyway_hibernate_example_app.jpa.Product;
-import com.example.spring_flyway_hibernate_example_app.jpa.ProductRepository;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+
+@TransactionalIntegrationTestContainers
 public class ProductServiceTest {
   @Autowired
   ProductService productService;
-  @Autowired
-  ModelMapper modelMapper;
-  @MockBean
-  ProductRepository productRepository;
 
   @Test
   void create() {
-    var product = Product.builder().name("product1").price(new BigDecimal(10000)).build();
-    var productDto = modelMapper.map(product, ProductDto.class);
-    doReturn(product).when(productRepository).save(product);
+    var creationDTO = ProductCreateDTO.builder()
+      .name("product1")
+      .price(new BigDecimal(1000))
+      .build();
+    var resultProductDTO = productService.create(creationDTO);
 
-    assertEquals(productDto, productService.create(productDto));
-    verify(productRepository, times(1)).save(any());
-    verifyNoMoreInteractions(productRepository);
+    assertThat(creationDTO).usingRecursiveComparison().isEqualTo(resultProductDTO);
+  }
+
+  @Test
+  void update() {
+    var createdProductDTO = productService.create(ProductCreateDTO.builder()
+      .name("product1")
+      .price(new BigDecimal(1000))
+      .build()
+    );
+    var updateDTO = ProductUpdateDTO.builder()
+      .id(createdProductDTO.getId())
+      .name("product2")
+      .price(new BigDecimal(2000))
+      .build();
+    var resultProductDTO = productService.update(updateDTO);
+
+    assertAll(
+      () -> assertThat(updateDTO).usingRecursiveComparison().isEqualTo(resultProductDTO),
+      () -> assertEquals(createdProductDTO.getCreatedAt(), resultProductDTO.getCreatedAt()),
+      () -> assertTrue(resultProductDTO.getUpdatedAt().isAfter(createdProductDTO.getCreatedAt()))
+    );
   }
 
   @Test
   void findById() {
-    var product = Product.builder().id(1L).name("product1").price(new BigDecimal(10000)).build();
-    doReturn(Optional.of(product)).when(productRepository).findById(product.getId());
+    var creationDTO = ProductCreateDTO.builder()
+      .name("product1")
+      .price(new BigDecimal(1000))
+      .build();
+    var createdProductDTO = productService.create(creationDTO);
 
-    assertEquals(modelMapper.map(product, ProductDto.class), productService.findById(product.getId()));
-    verify(productRepository, times(1)).findById(any());
-    verifyNoMoreInteractions(productRepository);
-  }
-
-  @Test
-  void findByIdThrowsException() {
-    doReturn(Optional.empty()).when(productRepository).findById(any());
-
-    assertThrows(ObjectNotFoundException.class, () -> productService.findById(1L));
-    verify(productRepository, times(1)).findById(any());
-    verifyNoMoreInteractions(productRepository);
+    assertThat(creationDTO).usingRecursiveComparison().isEqualTo(productService.findById(createdProductDTO.getId()));
   }
 
   @Test
   void findAll() {
-    var products = List.of(
-      Product.builder().name("product1").price(new BigDecimal(10000)).build(),
-      Product.builder().name("product2").price(new BigDecimal(10001)).build()
-    );
-    doReturn(products).when(productRepository).findAll();
-    var productDtoList = new ArrayList<ProductDto>();
-    products.forEach(product -> productDtoList.add(modelMapper.map(product, ProductDto.class)));
+    var products = new ArrayList<ProductDTO>();
+    products.add(productService.create(ProductCreateDTO.builder()
+      .name("product1")
+      .price(new BigDecimal(1000))
+      .build()
+    ));
+    products.add(productService.create(ProductCreateDTO.builder()
+      .name("product2")
+      .price(new BigDecimal(2000))
+      .build()
+    ));
 
-    assertEquals(productDtoList, productService.findAll());
-    verify(productRepository, times(1)).findAll();
-    verifyNoMoreInteractions(productRepository);
+    assertEquals(products, productService.findAll());
   }
 
   @Test
   void delete() {
-    doNothing().when(productRepository).deleteById(any());
+    var createdProductDTO = productService.create(ProductCreateDTO.builder()
+      .name("product1")
+      .price(new BigDecimal(1000))
+      .build()
+    );
+    var productsSizeBeforeDeletions = productService.findAll().size();
+    productService.delete(createdProductDTO.getId());
 
-    productService.delete(1L);
-    verify(productRepository, times(1)).deleteById(any());
-    verifyNoMoreInteractions(productRepository);
+    assertAll(
+      () -> assertThrows(ObjectNotFoundException.class, () -> productService.findById(createdProductDTO.getId())),
+      () -> assertEquals(productService.findAll().size(), productsSizeBeforeDeletions - 1)
+    );
   }
 }

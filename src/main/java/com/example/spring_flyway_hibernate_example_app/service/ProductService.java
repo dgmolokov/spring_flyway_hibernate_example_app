@@ -1,6 +1,8 @@
 package com.example.spring_flyway_hibernate_example_app.service;
 
-import com.example.spring_flyway_hibernate_example_app.dto.ProductDto;
+import com.example.spring_flyway_hibernate_example_app.dto.ProductCreateDTO;
+import com.example.spring_flyway_hibernate_example_app.dto.ProductDTO;
+import com.example.spring_flyway_hibernate_example_app.dto.ProductUpdateDTO;
 import com.example.spring_flyway_hibernate_example_app.exception.ObjectNotFoundException;
 import com.example.spring_flyway_hibernate_example_app.jpa.Product;
 import com.example.spring_flyway_hibernate_example_app.jpa.ProductRepository;
@@ -15,36 +17,35 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ProductService {
   private final ProductRepository productRepository;
-  private ModelMapper modelMapper;
+  public final ModelMapper modelMapper;
 
-  public ProductDto findById(Long id) {
+  public ProductDTO findById(long id) {
     var product = productRepository.findById(id).orElseThrow(() ->
       new ObjectNotFoundException(String.format("Product with ID %d was not found!", id)));
-    return modelMapper.map(product, ProductDto.class);
+    return modelMapper.map(product, ProductDTO.class);
   }
 
-  public List<ProductDto> findAll() {
+  public List<ProductDTO> findAll() {
     var products = productRepository.findAll();
     return products.stream()
-      .map(product -> modelMapper.map(product, ProductDto.class))
+      .map(product -> modelMapper.map(product, ProductDTO.class))
       .collect(Collectors.toList());
   }
 
-  public ProductDto create(ProductDto productDto) {
-    var product = modelMapper.map(productDto, Product.class);
-    return modelMapper.map(productRepository.save(product), ProductDto.class);
+  public ProductDTO create(ProductCreateDTO productCreateDTO) {
+    var product = modelMapper.map(productCreateDTO, Product.class);
+    return modelMapper.map(productRepository.save(product), ProductDTO.class);
   }
 
-  public ProductDto update(ProductDto productDto) {
-    var id = productDto.getId();
+  public ProductDTO update(ProductUpdateDTO productUpdateDTO) {
+    var id = productUpdateDTO.getId();
     var product = productRepository.findById(id).orElseThrow(() ->
       new ObjectNotFoundException(String.format("Product with ID %d was not found!", id)));
-    product.setName(productDto.getName());
-    product.setPrice(productDto.getPrice());
-    return modelMapper.map(productRepository.save(product), ProductDto.class);
+    modelMapper.map(productUpdateDTO, product);
+    return modelMapper.map(productRepository.save(product), ProductDTO.class);
   }
 
-  public void delete(Long id) {
+  public void delete(long id) {
     productRepository.deleteById(id);
   }
 }

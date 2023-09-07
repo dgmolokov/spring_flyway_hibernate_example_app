@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Entity
 @AllArgsConstructor
@@ -22,4 +23,6 @@ public class Product {
   private Long id;
   private String name;
   private BigDecimal price;
+  private Instant createdAt;
+  private Instant updatedAt;
 }
