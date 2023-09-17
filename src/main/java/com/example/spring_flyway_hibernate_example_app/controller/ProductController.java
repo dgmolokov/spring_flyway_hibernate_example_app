@@ -15,8 +15,8 @@ import java.util.List;
 public class ProductController {
   private final ProductService productService;
 
-  @GetMapping
-  public ProductDTO findById(@RequestParam long id) {
+  @GetMapping("/{id}")
+  public ProductDTO findById(@PathVariable long id) {
     return productService.findById(id);
   }
 
@@ -35,8 +35,8 @@ public class ProductController {
     return productService.update(productUpdateDTO);
   }
 
-  @DeleteMapping
-  public void delete(@RequestParam long id) {
+  @DeleteMapping("/{id}")
+  public void delete(@PathVariable long id) {
     productService.delete(id);
   }
 }

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ProductService {
   private final ProductRepository productRepository;
-  public final ModelMapper modelMapper;
+  private final ModelMapper modelMapper;
 
   public ProductDTO findById(long id) {
     var product = productRepository.findById(id).orElseThrow(() ->
@@ -26,8 +26,7 @@ public class ProductService {
   }
 
   public List<ProductDTO> findAll() {
-    var products = productRepository.findAll();
-    return products.stream()
+    return productRepository.findAll().stream()
       .map(product -> modelMapper.map(product, ProductDTO.class))
       .collect(Collectors.toList());
   }
@@ -46,6 +45,10 @@ public class ProductService {
   }
 
   public void delete(long id) {
-    productRepository.deleteById(id);
+    if (productRepository.existsById(id)) {
+      productRepository.deleteById(id);
+    } else {
+      throw new ObjectNotFoundException(String.format("Product with ID %d was not found!", id));
+    }
   }
 }

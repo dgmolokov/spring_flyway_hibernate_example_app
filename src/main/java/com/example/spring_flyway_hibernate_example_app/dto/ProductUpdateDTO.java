@@ -1,20 +1,17 @@
 package com.example.spring_flyway_hibernate_example_app.dto;
 
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@ToString
-@EqualsAndHashCode
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
+@Jacksonized
 @Builder
 public class ProductUpdateDTO {
-  private long id;
-  private String name;
-  private BigDecimal price;
-  private final Instant updatedAt = Instant.now();
+  public final long id;
+  public final String name;
+  public final BigDecimal price;
+  public final Instant updateTime = Instant.now();
 }

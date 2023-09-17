@@ -10,19 +10,16 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
 public class Product {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   private String name;
   private BigDecimal price;
-  private Instant createdAt;
-  private Instant updatedAt;
+  private Instant createTime;
+  private Instant updateTime;
 }

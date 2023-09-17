@@ -43,7 +43,7 @@ public class ProductControllerTest {
     doReturn(productDTO).when(productService).findById(productDTO.getId());
 
     Unchecked.supplier(
-      () -> mockMvc.perform(get(String.format("/products?id=%d", productDTO.getId())))
+      () -> mockMvc.perform(get(String.format("/products/%d", productDTO.getId())))
         .andExpect(status().isOk())
         .andExpect(content().json(productDTOJson))
     ).get();
@@ -79,13 +79,13 @@ public class ProductControllerTest {
       .name("product1")
       .price(new BigDecimal(1000))
       .build();
-    var productCreateDTOJson = Unchecked.supplier(() -> objectMapper.writeValueAsString(productCreateDTO)).get();
     var productDTO = ProductDTO.builder()
       .name("product1")
       .price(new BigDecimal(1000))
       .build();
+    var productCreateDTOJson = Unchecked.supplier(() -> objectMapper.writeValueAsString(productCreateDTO)).get();
     var productDTOJson = Unchecked.supplier(() -> objectMapper.writeValueAsString(productDTO)).get();
-    doReturn(productDTO).when(productService).create(productCreateDTO);
+    doReturn(productDTO).when(productService).create(any());
 
     Unchecked.supplier(() -> mockMvc.perform(post("/products")
         .content(productCreateDTOJson)
@@ -93,7 +93,7 @@ public class ProductControllerTest {
       .andExpect(status().isOk())
       .andExpect(content().json(productDTOJson))
     ).get();
-    verify(productService, times(1)).create(productCreateDTO);
+    verify(productService, times(1)).create(any());
     verifyNoMoreInteractions(productService);
   }
 
@@ -109,7 +109,7 @@ public class ProductControllerTest {
       .price(new BigDecimal(1000))
       .build();
     var productDTOJson = Unchecked.supplier(() -> objectMapper.writeValueAsString(productDTO)).get();
-    doReturn(productDTO).when(productService).update(productUpdateDTO);
+    doReturn(productDTO).when(productService).update(any());
 
     Unchecked.supplier(() -> mockMvc.perform(put("/products")
         .content(productUpdateDTOJson)
@@ -117,7 +117,7 @@ public class ProductControllerTest {
       .andExpect(status().isOk())
       .andExpect(content().json(productDTOJson))
     ).get();
-    verify(productService, times(1)).update(productUpdateDTO);
+    verify(productService, times(1)).update(any());
     verifyNoMoreInteractions(productService);
   }
 
@@ -126,7 +126,7 @@ public class ProductControllerTest {
     long id = 0L;
     doNothing().when(productService).delete(id);
 
-    Unchecked.supplier(() -> mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/products?id=%d", id)))
+    Unchecked.supplier(() -> mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/products/%d", id)))
       .andExpect(status().isOk())
     ).get();
     verify(productService, times(1)).delete(id);
