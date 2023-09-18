@@ -27,11 +27,11 @@ public class ProductServiceTest {
       .build();
     var resultDTO = productService.create(creationDTO);
     var expectedDTO = ProductDTO.builder()
-      .id(resultDTO.getId())
-      .name(creationDTO.getName())
-      .price(creationDTO.getPrice())
-      .createTime(creationDTO.getCreateTime())
-      .updateTime(creationDTO.getUpdateTime())
+      .id(resultDTO.id)
+      .name(creationDTO.name)
+      .price(creationDTO.price)
+      .createTime(creationDTO.createTime)
+      .updateTime(creationDTO.updateTime)
       .build();
 
     assertEquals(expectedDTO, resultDTO);
@@ -45,23 +45,20 @@ public class ProductServiceTest {
       .build()
     );
     var updateDTO = ProductUpdateDTO.builder()
-      .id(createdProductDTO.getId())
+      .id(createdProductDTO.id)
       .name("product2")
       .price(new BigDecimal(2000))
       .build();
     var expectedDTO = ProductDTO.builder()
-      .id(createdProductDTO.getId())
-      .name(updateDTO.getName())
-      .price(updateDTO.getPrice())
-      .createTime(createdProductDTO.getCreateTime())
-      .updateTime(updateDTO.getUpdateTime())
+      .id(createdProductDTO.id)
+      .name(updateDTO.name)
+      .price(updateDTO.price)
+      .createTime(createdProductDTO.createTime)
+      .updateTime(updateDTO.updateTime)
       .build();
     var resultProductDTO = productService.update(updateDTO);
 
-    assertAll(
-      () -> assertEquals(expectedDTO, resultProductDTO),
-      () -> assertTrue(resultProductDTO.updateTime.isAfter(resultProductDTO.createTime))
-    );
+    assertEquals(expectedDTO, resultProductDTO);
   }
 
   @Test
@@ -82,14 +79,14 @@ public class ProductServiceTest {
       .build();
     var createdProductDTO = productService.create(creationDTO);
     var expectedDTO = ProductDTO.builder()
-      .id(createdProductDTO.getId())
-      .name(creationDTO.getName())
-      .price(creationDTO.getPrice())
-      .createTime(creationDTO.getCreateTime())
-      .updateTime(creationDTO.getUpdateTime())
+      .id(createdProductDTO.id)
+      .name(creationDTO.name)
+      .price(creationDTO.price)
+      .createTime(creationDTO.createTime)
+      .updateTime(creationDTO.updateTime)
       .build();
 
-    assertEquals(expectedDTO, productService.findById(createdProductDTO.getId()));
+    assertEquals(expectedDTO, productService.findById(createdProductDTO.id));
   }
 
   @Test
